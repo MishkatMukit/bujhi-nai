@@ -358,8 +358,8 @@ Build one phase at a time. Do not start the next phase in the same change; each 
 | 3 | Mongoose model + seed data | Done |
 | 4 | Read API (`GET /`, `GET /:id`) | Done |
 | 5 | Gemma integration | Done |
-| 6 | Explain API (`POST /explain`) | Not started |
-| 7 | Upvote + end-to-end hardening | Not started |
+| 6 | Explain API (`POST /explain`) | Done |
+| 7 | Upvote + end-to-end hardening | Done |
 
 ### Phase 1 — Scaffold + HTTP skeleton
 
@@ -426,6 +426,8 @@ Files: `src/app/lib/multer.ts`, plus the `POST /explain` additions to `board.val
 
 **Exit:** multipart `curl` with image only creates a board; image + audio works and sets `hadAudioQuestion`; invalid mime/missing image → `400`; created board appears in `GET /api/boards`.
 
+> Implementation note: the hosted `gemma-4-26b-a4b-it` model rejects audio input (`Audio input modality is not enabled`), so audio requests fall back to the local model, which answers from the image and typed question. The upload is still accepted and `hadAudioQuestion` is still set; only the spoken content is ignored.
+
 ### Phase 7 — Upvote + end-to-end hardening
 
 Files: `board.service/controller/route` for `PATCH /:id/helpful`; small fixes elsewhere.
@@ -435,6 +437,8 @@ Files: `board.service/controller/route` for `PATCH /:id/helpful`; small fixes el
 - Run the full endpoint sweep and `npm run build`.
 
 **Exit:** `PATCH` increments exactly once per call and survives reload; complete curl suite passes; build/typecheck pass; update the status table and `AGENTS.md` if commands changed.
+
+> Implementation note: `PATCH` uses `findByIdAndUpdate` with `$inc` and `returnDocument: "after"`, projecting only `helpfulCount`. Outside development, the error handler exposes `AppError`, Zod/Mongoose validation, duplicate-key, and body-parser messages because they are client-facing, and masks only unknown errors. Stored media is budgeted at 15 MB of encoded text so a board cannot approach Mongo's 16 MB document cap after a paid AI call.
 
 ## Verification
 

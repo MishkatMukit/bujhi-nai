@@ -36,14 +36,18 @@ export interface IBoardExplanation {
 	updatedAt: Date;
 }
 
-/** Fields the client supplies for `POST /explain`; the rest come from Gemma. */
-export interface ICreateBoardPayload {
+/** An uploaded file held in memory by Multer. */
+export interface IUploadedMedia {
+	buffer: Buffer;
+	mimeType: string;
+}
+
+/** Everything the controller hands to the service for `POST /explain`. */
+export interface IExplainBoardPayload {
 	department: TDepartment;
 	textQuestion?: string;
-	hadAudioQuestion: boolean;
-	imageBase64: string;
-	audioBase64?: string;
-	audioMimeType?: string;
+	image: IUploadedMedia;
+	audio?: IUploadedMedia;
 }
 
 /** Query string accepted by `GET /api/boards`. */

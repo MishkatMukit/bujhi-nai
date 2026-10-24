@@ -5,7 +5,7 @@
 This repo is still a scaffold, not a working app. Do not infer a package manager or command from missing files.
 
 - Initial commit is on `main`; remote `origin` is `https://github.com/MishkatMukit/bujhi-nai.git`.
-- `bujhi-nai-backend/` is scaffolded through Phase 5 of `backend.md`: manifest, lockfile, TS/Biome/tsup config, config loader, `app.ts`/`server.ts`, shared utils/middleware, the board interface/model with both indexes, the Atlas connection, an idempotent seed, the read API, and the Gemma integration (`lib/gemma.ts` + `scripts/test-gemma.ts`). Explain/upvote routes and tests are still missing.
+- `bujhi-nai-backend/` is scaffolded through Phase 7 of `backend.md` (all phases done): manifest, lockfile, TS/Biome/tsup config, config loader, `app.ts`/`server.ts`, shared utils/middleware, the board interface/model with both indexes, the Atlas connection, an idempotent seed, the read API, the Gemma integration (`lib/gemma.ts` + `scripts/test-gemma.ts`), `POST /api/boards/explain` with Multer uploads (`lib/multer.ts`), and `PATCH /api/boards/:id/helpful`. The frontend and an automated test runner are still missing.
 - `bujhi-nai-frontend/` is still empty: no manifest, lockfile, source, CI, or tests.
 - `.gitignore` ignores Node/Next/TS build output and `.env*` (except `.env.example`), plus `plans.md` and `AGENTS.md`.
 

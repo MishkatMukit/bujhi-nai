@@ -1,4 +1,4 @@
-import { GoogleGenAI, type Part, type Schema, Type } from "@google/genai";
+import { ApiError, GoogleGenAI, type Part, type Schema, Type } from "@google/genai";
 import httpStatus from "http-status";
 import { z } from "zod";
 import config from "../config/index";
@@ -33,7 +33,7 @@ export type TBoardExplanationContent = z.infer<typeof boardExplanationContentSch
 export interface IGemmaRequest {
 	/** Data URL: `data:image/png;base64,...` */
 	imageBase64: string;
-	/** Optional data URL for the spoken question. */
+	/** Optional data URL for the spoken question. The hosted Gemma models reject audio, so that case falls back to the image. */
 	audioBase64?: string;
 	textQuestion?: string;
 	department: TDepartment;
@@ -169,8 +169,17 @@ const parseBoardExplanation = (raw: string): TBoardExplanationContent => {
 
 	try {
 		parsed = JSON.parse(cleaned);
-	} catch {
-		console.error("Gemma returned non-JSON output:", cleaned.slice(0, 800));
+	} catch (error) {
+		console.error(
+			"Gemma returned non-JSON output:",
+			error instanceof Error ? error.message : error,
+			"| length:",
+			cleaned.length,
+			"| head:",
+			cleaned.slice(0, 300),
+			"| tail:",
+			cleaned.slice(-300),
+		);
 		throw new AppError("AI returned an invalid response", httpStatus.BAD_GATEWAY);
 	}
 
@@ -250,7 +259,7 @@ const callOllama = async (
 			model: config.ollama_model,
 			stream: false,
 			format: jsonSchema,
-			options: { temperature: 0.3 },
+			options: { temperature: 0.3, num_ctx: 8192, num_predict: 4096 },
 			messages: [{ role: "user", content: prompt, images: [image.data] }],
 		}),
 	});
@@ -273,6 +282,49 @@ const callOllama = async (
 	};
 };
 
+/** One initial call plus one retry per provider. */
+const MAX_ATTEMPTS = 2;
+const RETRY_DELAY_MS = 500;
+
+/**
+ * Retries only help transient failures. Rejected requests (bad key, unsupported
+ * media, audio modality disabled) fail identically every time.
+ */
+const isRetryable = (error: unknown): boolean => {
+	if (error instanceof AppError) {
+		return error.statusCode !== httpStatus.BAD_REQUEST;
+	}
+
+	if (error instanceof ApiError) {
+		return error.status >= 500 || error.status === 429;
+	}
+
+	return true;
+};
+
+const withRetry = async <T>(attempt: () => Promise<T>, label: string): Promise<T> => {
+	let lastError: unknown;
+
+	for (let attemptNumber = 1; attemptNumber <= MAX_ATTEMPTS; attemptNumber++) {
+		try {
+			return await attempt();
+		} catch (error) {
+			lastError = error;
+
+			if (!isRetryable(error) || attemptNumber === MAX_ATTEMPTS) {
+				throw error;
+			}
+
+			console.warn(
+				`${label} attempt ${attemptNumber} failed (${error instanceof Error ? error.message : error}); retrying once`,
+			);
+			await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+		}
+	}
+
+	throw lastError;
+};
+
 /**
  * Sends the whiteboard (and optional audio question) to Gemma and returns
  * validated content fields. Falls back to a local Ollama model when the hosted
@@ -285,7 +337,7 @@ export const generateBoardExplanation = async (
 
 	if (config.gemini_api_key) {
 		try {
-			return await callGemini(prompt, input);
+			return await withRetry(() => callGemini(prompt, input), "Hosted Gemma");
 		} catch (error) {
 			console.warn(
 				`Hosted Gemma call failed (${error instanceof Error ? error.message : error}); trying Ollama model ${config.ollama_model}`,
@@ -294,7 +346,7 @@ export const generateBoardExplanation = async (
 	}
 
 	try {
-		return await callOllama(prompt, input);
+		return await withRetry(() => callOllama(prompt, input), "Ollama fallback");
 	} catch (error) {
 		console.error("Ollama fallback failed:", error instanceof Error ? error.message : error);
 		throw new AppError("AI explanation service is unavailable", httpStatus.BAD_GATEWAY);

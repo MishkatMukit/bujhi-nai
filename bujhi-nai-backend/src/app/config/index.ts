@@ -39,6 +39,30 @@ export const assertEnv = (): void => {
 			`Missing required environment variable(s): ${missing.join(", ")}. Copy .env.example to .env and fill them in.`,
 		);
 	}
+
+	const { PORT, OLLAMA_URL } = process.env;
+
+	if (PORT !== undefined) {
+		const port = Number(PORT);
+
+		if (!Number.isInteger(port) || port < 1 || port > 65535) {
+			throw new Error(`Invalid PORT "${PORT}". Use an integer between 1 and 65535.`);
+		}
+	}
+
+	if (OLLAMA_URL) {
+		let parsed: URL;
+
+		try {
+			parsed = new URL(OLLAMA_URL);
+		} catch {
+			throw new Error(`Invalid OLLAMA_URL "${OLLAMA_URL}". Use a full http(s) URL.`);
+		}
+
+		if (!["http:", "https:"].includes(parsed.protocol)) {
+			throw new Error(`Invalid OLLAMA_URL "${OLLAMA_URL}". Use a full http(s) URL.`);
+		}
+	}
 };
 
 export default config;
