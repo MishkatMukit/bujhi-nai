@@ -5,7 +5,7 @@
 This repo is still a scaffold, not a working app. Do not infer a package manager or command from missing files.
 
 - Initial commit is on `main`; remote `origin` is `https://github.com/MishkatMukit/bujhi-nai.git`.
-- `bujhi-nai-backend/` is scaffolded through Phase 2 of `backend.md`: manifest, `package-lock.json`, TS/Biome/tsup config, config loader, `app.ts`/`server.ts`, and the shared `AppError`/`sendResponse`/`catchAsync` utils plus validation, 404, and global error middleware. No models, feature routes, or tests yet.
+- `bujhi-nai-backend/` is scaffolded through Phase 3 of `backend.md`: manifest, `package-lock.json`, TS/Biome/tsup config, config loader, `app.ts`/`server.ts`, shared utils/middleware, the `IBoardExplanation` interface and Mongoose model with both indexes, the Atlas connection, and an idempotent seed (`src/scripts/seed.ts` + PNG fixtures). No feature routes or tests yet.
 - `bujhi-nai-frontend/` is still empty: no manifest, lockfile, source, CI, or tests.
 - `.gitignore` ignores Node/Next/TS build output and `.env*` (except `.env.example`), plus `plans.md` and `AGENTS.md`.
 
