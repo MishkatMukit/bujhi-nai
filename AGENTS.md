@@ -2,14 +2,43 @@
 
 ## Repository state
 
-This repo is currently a scaffold, not a working app. Do not infer a stack, package manager, or command.
+This repo is still a scaffold, not a working app. Do not infer a package manager or command from missing files.
 
-- `bujhi-nai-frontend/` and `bujhi-nai-backend/` exist but are empty.
-- There are no manifests, lockfiles, source files, CI, tests, or commits yet (branch `master`, no remote).
-- `.gitignore` exists but is empty.
+- Initial commit is on `main`; remote `origin` is `https://github.com/MishkatMukit/bujhi-nai.git`.
+- `bujhi-nai-backend/` is scaffolded through Phase 1 of `backend.md`: manifest, `package-lock.json`, TS/Biome/tsup config, config loader, `src/app.ts`, `src/server.ts`. No models, routes, or tests yet.
+- `bujhi-nai-frontend/` is still empty: no manifest, lockfile, source, CI, or tests.
+- `.gitignore` ignores Node/Next/TS build output and `.env*` (except `.env.example`), plus `plans.md` and `AGENTS.md`.
+
+## Planning docs
+
+- `plans.md` — original product/architecture plan. Its sections 4+ are collapsed into long lines; prefer the split docs below.
+- `backend.md` — Express module layout, routes/controller/service rules, API, schema, Gemma service.
+- `frontend.md` — Next.js layout, components, API client, voice/KaTeX behavior.
+
+Read the relevant doc before scaffolding; do not invent a different structure.
 
 ## Working here
 
-- Before running install/build/test/lint, confirm the toolchain from files on disk. If no manifest exists, ask the user instead of guessing `npm`/`pip` commands or scaffolding a project.
-- When adding code, keep the frontend in `bujhi-nai-frontend/` and the backend in `bujhi-nai-backend/`; put each manifest and lockfile inside its own directory.
-- Update this file with the exact install, dev, build, test, and single-test commands once they exist. Add stack-appropriate patterns to `.gitignore` in the same change that introduces generated files (e.g. `node_modules/`, build output, `.env`).
+- Planned stack: Next.js App Router + TypeScript + Tailwind + shadcn/ui; Node/Express + TypeScript + MongoDB Atlas/Mongoose; Gemma 4 via `@google/genai` (Ollama fallback).
+- Backend follows the `housely-backend` conventions: app code under `src/app/`, entry files `src/app.ts` + `src/server.ts`, modules at `src/app/modules/<name>/{<name>.route.ts,<name>.controller.ts,<name>.service.ts,<name>.validation.ts}`. Dependency direction is route → controller → service; controllers must not import Mongoose or Gemma directly.
+- Backend responses go through `src/app/utils/sendResponse.ts` (`{ success, statusCode, message, data, meta? }`), expected failures use `AppError`, handlers use `catchAsync`, and Zod validation uses `validateRequest`/`validateQuery`/`validateParams`.
+- Backend work is split into 7 phases in `backend.md`. Implement one phase per change, stop at its exit check, then update the status table; do not jump ahead.
+- Use the real directory names `bujhi-nai-backend/` and `bujhi-nai-frontend/`; `plans.md` calls them `backend/` and `frontend/`.
+- One manifest and one lockfile per app; add scripts here as each app is scaffolded.
+- Keep generated files (`node_modules/`, `.next/`, `dist/`, `.env*`) ignored as new tooling appears.
+
+## Backend commands
+
+Run from `bujhi-nai-backend/` (npm):
+
+| Task | Command |
+| :--- | :--- |
+| Install | `npm install` |
+| Dev server | `npm run dev` (`tsx watch`, `http://localhost:5000`) |
+| Build | `npm run build` (`tsup` → `dist/`) |
+| Production start | `npm start` (`node dist/server.js`) |
+| Typecheck | `npm run typecheck` (`tsc --noEmit`) |
+| Lint / format | `npm run lint` / `npm run format` (Biome) |
+| Seed | `npm run seed` (wired; runnable from Phase 3) |
+
+The server needs a local `.env` (copy `.env.example`); it refuses to start without `MONGODB_URI` and `GEMINI_API_KEY`. No test runner is chosen yet.

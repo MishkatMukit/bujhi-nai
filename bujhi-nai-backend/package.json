@@ -1,0 +1,42 @@
+{
+	"name": "bujhi-nai-backend",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Express + TypeScript API for the Bujhi Nai whiteboard explainer",
+	"type": "module",
+	"main": "dist/server.js",
+	"engines": {
+		"node": ">=20"
+	},
+	"scripts": {
+		"dev": "tsx watch src/server.ts",
+		"build": "tsup",
+		"start": "node dist/server.js",
+		"typecheck": "tsc --noEmit",
+		"seed": "tsx src/scripts/seed.ts",
+		"lint": "biome check .",
+		"format": "biome check --write ."
+	},
+	"dependencies": {
+		"@google/genai": "^2.31.0",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.6",
+		"dotenv": "^18.0.9",
+		"express": "^5.3.0",
+		"http-status": "^2.1.0",
+		"mongoose": "^9.11.4",
+		"multer": "^2.5.0",
+		"zod": "^4.6.7"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.6.2",
+		"@types/cookie-parser": "^1.4.10",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.6",
+		"@types/multer": "^2.3.0",
+		"@types/node": "^26.6.5",
+		"tsup": "^9.0.0",
+		"tsx": "^4.23.15",
+		"typescript": "^7.0.2"
+	}
+}
