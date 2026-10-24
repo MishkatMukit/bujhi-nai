@@ -4,6 +4,7 @@ import express, { type Request, type Response } from "express";
 import config from "./app/config/index";
 import globalErrorHandler from "./app/middleware/globalErrorHandler";
 import { routeHandler } from "./app/middleware/notFound";
+import { boardRoutes } from "./app/modules/board/board.route";
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use("/api/boards", boardRoutes);
 
 app.get("/", (_req: Request, res: Response) => {
 	res.status(200).json({
@@ -27,7 +30,7 @@ app.get("/", (_req: Request, res: Response) => {
 	});
 });
 
-// Feature routes (board module) are mounted here from Phase 4.
+// Feature routes are mounted above the health route.
 
 app.use(routeHandler);
 app.use(globalErrorHandler);
