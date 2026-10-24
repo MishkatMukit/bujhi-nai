@@ -2,6 +2,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
 import config from "./app/config/index";
+import globalErrorHandler from "./app/middleware/globalErrorHandler";
+import { routeHandler } from "./app/middleware/notFound";
 
 const app = express();
 
@@ -26,6 +28,8 @@ app.get("/", (_req: Request, res: Response) => {
 });
 
 // Feature routes (board module) are mounted here from Phase 4.
-// 404 and global error middleware are added in Phase 2.
+
+app.use(routeHandler);
+app.use(globalErrorHandler);
 
 export default app;
