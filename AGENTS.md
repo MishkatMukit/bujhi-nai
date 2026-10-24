@@ -5,7 +5,7 @@
 This repo is still a scaffold, not a working app. Do not infer a package manager or command from missing files.
 
 - Initial commit is on `main`; remote `origin` is `https://github.com/MishkatMukit/bujhi-nai.git`.
-- `bujhi-nai-backend/` is scaffolded through Phase 4 of `backend.md`: manifest, lockfile, TS/Biome/tsup config, config loader, `app.ts`/`server.ts`, shared utils/middleware, the board interface/model with both indexes, the Atlas connection, an idempotent seed, and the read API (`GET /api/boards`, `GET /api/boards/:id`). Explain/upvote routes and tests are still missing.
+- `bujhi-nai-backend/` is scaffolded through Phase 5 of `backend.md`: manifest, lockfile, TS/Biome/tsup config, config loader, `app.ts`/`server.ts`, shared utils/middleware, the board interface/model with both indexes, the Atlas connection, an idempotent seed, the read API, and the Gemma integration (`lib/gemma.ts` + `scripts/test-gemma.ts`). Explain/upvote routes and tests are still missing.
 - `bujhi-nai-frontend/` is still empty: no manifest, lockfile, source, CI, or tests.
 - `.gitignore` ignores Node/Next/TS build output and `.env*` (except `.env.example`), plus `plans.md` and `AGENTS.md`.
 
@@ -39,6 +39,7 @@ Run from `bujhi-nai-backend/` (npm):
 | Production start | `npm start` (`node dist/server.js`) |
 | Typecheck | `npm run typecheck` (`tsc --noEmit`) |
 | Lint / format | `npm run lint` / `npm run format` (Biome) |
-| Seed | `npm run seed` (wired; runnable from Phase 3) |
+| Seed | `npm run seed` (idempotent; three sample boards) |
+| Gemma smoke test | `npx tsx src/scripts/test-gemma.ts` (hosted Gemma, falls back to Ollama) |
 
 The server needs a local `.env` (copy `.env.example`); it refuses to start without `MONGODB_URI` and `GEMINI_API_KEY`. No test runner is chosen yet.

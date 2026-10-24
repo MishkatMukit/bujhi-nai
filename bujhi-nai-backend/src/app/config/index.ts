@@ -19,6 +19,8 @@ const config = {
 	mongodb_uri: process.env.MONGODB_URI as string,
 	gemini_api_key: process.env.GEMINI_API_KEY as string,
 	gemma_model: process.env.GEMMA_MODEL ?? "gemma-4-26b-a4b-it",
+	ollama_url: process.env.OLLAMA_URL ?? "http://localhost:11434",
+	ollama_model: process.env.OLLAMA_MODEL ?? "gemma4:e4b",
 	frontend_url: process.env.FRONTEND_URL ?? "http://localhost:3000",
 } as const;
 

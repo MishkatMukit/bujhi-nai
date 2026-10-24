@@ -357,7 +357,7 @@ Build one phase at a time. Do not start the next phase in the same change; each 
 | 2 | Shared conventions (`AppError`, `sendResponse`, middleware) | Done |
 | 3 | Mongoose model + seed data | Done |
 | 4 | Read API (`GET /`, `GET /:id`) | Done |
-| 5 | Gemma integration | Not started |
+| 5 | Gemma integration | Done |
 | 6 | Explain API (`POST /explain`) | Not started |
 | 7 | Upvote + end-to-end hardening | Not started |
 
