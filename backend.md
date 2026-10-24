@@ -278,7 +278,7 @@ Database: `bujhi_nai_iiuc`; collection: `boardexplanations`; interface: `IBoardE
   imageBase64: string;
   studentQuestion: string;
   hadAudioQuestion: boolean;
-  cleanTranscription: string;        // Markdown + LaTeX
+  cleanTranscription: string;        // print-ready study note: board + expanded topic theory, Markdown + LaTeX
   specificAnswer: string;            // Bangla answer to the actual confusion
   stepByStepBangla: {
     stepNumber: number;
@@ -310,9 +310,10 @@ Indexes:
 `src/app/lib/gemma.ts` owns the integration; `board.service.ts` calls it.
 
 - Model: `gemma-4-26b-a4b-it` via `@google/genai`; local fallback `gemma4:e4b` via Ollama. Read the model ID from `config.gemma_model`.
-- Temperature `0.3`; request `application/json` with a strict response schema.
+- Temperature `0.3`; request `application/json` with a strict response schema and `maxOutputTokens: 8192`, since a full note is long.
 - The AI response schema contains only content fields: `semester`, `courseDetected`, `topicTitle`, `cleanTranscription`, `specificAnswer`, `stepByStepBangla`, `examShortcutTip`, `practiceProblem`. Server-owned fields (`_id`, `department`, `imageBase64`, `studentQuestion`, `hadAudioQuestion`, `helpfulCount`, `isSample`, timestamps) are added by the service.
-- Prompt rules: friendly IIUC senior tutor; natural Bangladeshi Bangla with technical terms in English (Time Complexity, Epsilon Closure, Supernode, Debit/Credit); call out steps professors skip; exactly one exam-style practice problem with hint and solution; JSON only.
+- Prompt rules: friendly IIUC senior tutor; natural Bangladeshi Bangla with technical terms in English (Time Complexity, Epsilon Closure, Supernode, Debit/Credit); treat the board as a starting point and expand the detected topic with definitions, prerequisites, formulas, a new worked example, common mistakes, and an exam checklist (added material marked `(বোর্ডে নেই, কিন্তু দরকারি)`); 4–7 steps that explain why and call out steps professors skip; exactly one exam-style practice problem with hint and solution; JSON only.
+- `cleanTranscription` is no longer a bare transcription: the viewer's "পরিষ্কার নোট" tab and the print sheet render it directly, so it must stand alone as notes.
 - Validate required strings, non-empty `stepByStepBangla`, and the `practiceProblem` shape before saving. Log the raw failure, not the user's image/audio.
 
 ## Environment

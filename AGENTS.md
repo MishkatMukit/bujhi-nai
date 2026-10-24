@@ -2,12 +2,12 @@
 
 ## Repository state
 
-This repo is still a scaffold, not a working app. Do not infer a package manager or command from missing files.
+This repo is a working full-stack app: Express + MongoDB API plus a Next.js frontend. Do not infer a package manager or command from missing files.
 
 - Initial commit is on `main`; remote `origin` is `https://github.com/MishkatMukit/bujhi-nai.git`.
-- `bujhi-nai-backend/` is scaffolded through Phase 7 of `backend.md` (all phases done): manifest, lockfile, TS/Biome/tsup config, config loader, `app.ts`/`server.ts`, shared utils/middleware, the board interface/model with both indexes, the Atlas connection, an idempotent seed, the read API, the Gemma integration (`lib/gemma.ts` + `scripts/test-gemma.ts`), `POST /api/boards/explain` with Multer uploads (`lib/multer.ts`), and `PATCH /api/boards/:id/helpful`. The frontend and an automated test runner are still missing.
-- `bujhi-nai-frontend/` is still empty: no manifest, lockfile, source, CI, or tests.
-- `.gitignore` ignores Node/Next/TS build output and `.env*` (except `.env.example`), plus `plans.md` and `AGENTS.md`.
+- `bujhi-nai-backend/` is scaffolded through Phase 7 of `backend.md` (all phases done): manifest, lockfile, TS/Biome/tsup config, config loader, `app.ts`/`server.ts`, shared utils/middleware, the board interface/model with both indexes, the Atlas connection, an idempotent seed, the read API, the Gemma integration (`lib/gemma.ts` + `scripts/test-gemma.ts`), `POST /api/boards/explain` with Multer uploads (`lib/multer.ts`), and `PATCH /api/boards/:id/helpful`. An automated test runner is still missing.
+- `bujhi-nai-frontend/` is a working Next.js 16 App Router app (TypeScript, Tailwind v4, shadcn/ui, `react-markdown` + KaTeX + voice recording): chat-style single screen, composer with image/voice/notes, three-tab explanation viewer, mobile archive sheet and desktop archive rail. It has no CI or automated test runner yet.
+- `.gitignore` ignores Node/Next/TS build output and `.env*` (except example files such as `.env.example` and `.env.local.example`), plus `plans.md` and `AGENTS.md`.
 
 ## Planning docs
 
@@ -43,3 +43,18 @@ Run from `bujhi-nai-backend/` (npm):
 | Gemma smoke test | `npx tsx src/scripts/test-gemma.ts` (hosted Gemma, falls back to Ollama) |
 
 The server needs a local `.env` (copy `.env.example`); it refuses to start without `MONGODB_URI` and `GEMINI_API_KEY`. No test runner is chosen yet.
+
+## Frontend commands
+
+Run from `bujhi-nai-frontend/` (npm):
+
+| Task | Command |
+| :--- | :--- |
+| Install | `npm install` |
+| Dev server | `npm run dev` (`http://localhost:3000`) |
+| Build | `npm run build` |
+| Production start | `npm run start` |
+| Lint | `npm run lint` (ESLint) |
+| Typecheck | `npx tsc --noEmit` |
+
+The frontend needs a local `.env.local` (copy `.env.local.example`) with `NEXT_PUBLIC_API_URL` (defaults to `http://localhost:5000/api`). Start the backend first; the app fetches the archive and calls `POST /api/boards/explain`. Printing uses a dedicated body-level `PrintSheet` because the chat shell is fixed-height and overflow-hidden. No test runner is chosen yet.

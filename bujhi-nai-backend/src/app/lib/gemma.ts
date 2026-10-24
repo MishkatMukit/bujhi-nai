@@ -67,21 +67,29 @@ const gemmaResponseSchema: Schema = {
 		},
 		cleanTranscription: {
 			type: Type.STRING,
-			description: "Markdown transcription of the board; formulas as LaTeX.",
+			description:
+				"Comprehensive Markdown study note in Bangla on the detected topic: cleaned board content, then expanded theory, formulas with symbol meanings, a new worked example, common mistakes, and an exam checklist. Formulas as LaTeX.",
 		},
 		specificAnswer: {
 			type: Type.STRING,
-			description: "Bangla answer to the student's actual confusion.",
+			description:
+				"Bangla answer to the student's actual confusion, explaining the reason in 2-4 sentences.",
 		},
 		stepByStepBangla: {
 			type: Type.ARRAY,
-			minItems: "2",
+			minItems: "4",
 			items: {
 				type: Type.OBJECT,
 				properties: {
 					stepNumber: { type: Type.INTEGER },
-					equationOrConcept: { type: Type.STRING },
-					banglaExplanation: { type: Type.STRING },
+					equationOrConcept: {
+						type: Type.STRING,
+						description: "Concept heading or LaTeX for the step.",
+					},
+					banglaExplanation: {
+						type: Type.STRING,
+						description: "2-4 Bangla sentences: why the step works, with a small check or example.",
+					},
 				},
 				required: ["stepNumber", "equationOrConcept", "banglaExplanation"],
 				propertyOrdering: ["stepNumber", "equationOrConcept", "banglaExplanation"],
@@ -89,14 +97,20 @@ const gemmaResponseSchema: Schema = {
 		},
 		examShortcutTip: {
 			type: Type.STRING,
-			description: "One practical shortcut for exams.",
+			description: "One practical exam shortcut, plus the condition where it does not apply.",
 		},
 		practiceProblem: {
 			type: Type.OBJECT,
 			properties: {
-				question: { type: Type.STRING },
+				question: {
+					type: Type.STRING,
+					description: "One exam-style problem, different from the board example.",
+				},
 				hint: { type: Type.STRING },
-				solution: { type: Type.STRING },
+				solution: {
+					type: Type.STRING,
+					description: "Full step-by-step solution in Bangla with LaTeX.",
+				},
 			},
 			required: ["question", "hint", "solution"],
 			propertyOrdering: ["question", "hint", "solution"],
@@ -139,12 +153,21 @@ ${audioNote}
 Rules:
 - Explain in natural, friendly Bangladeshi Bangla. Keep technical terms in English (Time Complexity, Epsilon Closure, Supernode, Debit/Credit).
 - Use only Bangla (Bengali script) and English (Latin script) in prose. Never output Devanagari, Han, Japanese, or any other script.
-- Detect the course and semester from the board; give your best guess if it is not written.
-- cleanTranscription: transcribe the board in Markdown. Every formula, equation, and state set MUST be LaTeX inside $...$ or $$...$$.
-- specificAnswer: answer the student's exact confusion, not a generic lecture. If no question was typed, target the step students usually get stuck on.
-- stepByStepBangla: 3 to 6 steps. Point out the steps professors usually skip.
-- examShortcutTip: exactly one practical shortcut for exams.
-- practiceProblem: exactly ONE exam-style problem with a hint and a full solution.
+- Detect the course and semester from the board; give your best guess if it is not written. Let the detected course and topic decide what background material the student needs.
+- The whiteboard is the starting point, not the limit. Teach the topic, not only the visible lines: add the definitions, prerequisites, formulas, and examples a student actually needs to understand it. Stay on the detected topic and never invent details about that specific class.
+- If the board is blank, cropped, or unreadable, infer the topic from the student's question and still produce a complete explanation. Say briefly that the board was unclear.
+- cleanTranscription: a complete, print-ready Markdown study note in Bangla. It must contain these sections, in order:
+  1. "## বোর্ডে যা আছে" — clean up every visible line and formula and explain what each one means.
+  2. "## টপিকটা পুরোটা বুঝি" — definitions, intuition or a real-life analogy, and the prerequisite ideas.
+  3. "## সূত্র ও নিয়ম" — the formulas this topic needs, with every symbol explained; a table is fine.
+  4. "## ছোট উদাহরণ" — one fully worked mini-example that is NOT copied from the board.
+  5. "## যেখানে ভুল হয়" — 2 to 4 common mistakes and how to avoid them.
+  6. "## পরীক্ষার চেকলিস্ট" — 3 to 5 bullets to check before the exam.
+  Anything that is not visible on the board but added for understanding must be marked "(বোর্ডে নেই, কিন্তু দরকারি)". Use Markdown headings, bullets and tables; every formula, equation and state set must be LaTeX inside $...$ or $$...$$. Be information-dense: no filler, no repeated sentences.
+- specificAnswer: 2 to 4 sentences that resolve the student's exact confusion and explain why, not a generic lecture. If no question was typed, target the step students usually get stuck on.
+- stepByStepBangla: 4 to 7 steps. Each banglaExplanation is 2 to 4 sentences that explain why the step works, plus one quick check or tiny example. Include prerequisites and the traps professors skip.
+- examShortcutTip: exactly one practical exam shortcut, and when it does not apply.
+- practiceProblem: exactly ONE exam-style problem that differs from the board example, with a hint and a full solution.
 - Return only JSON that matches the schema. No markdown fences, no extra commentary.`;
 };
 
@@ -220,6 +243,7 @@ const callGemini = async (
 		contents: [{ role: "user", parts }],
 		config: {
 			temperature: 0.3,
+			maxOutputTokens: 8192,
 			responseMimeType: "application/json",
 			responseSchema: gemmaResponseSchema,
 		},
@@ -259,7 +283,7 @@ const callOllama = async (
 			model: config.ollama_model,
 			stream: false,
 			format: jsonSchema,
-			options: { temperature: 0.3, num_ctx: 8192, num_predict: 4096 },
+			options: { temperature: 0.3, num_ctx: 12288, num_predict: 6144 },
 			messages: [{ role: "user", content: prompt, images: [image.data] }],
 		}),
 	});
